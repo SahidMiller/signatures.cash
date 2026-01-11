@@ -1,5 +1,6 @@
 import { Command, Option } from 'commander';
 import { createSecp256k1Template } from './secp256k1/index.ts';
+import { createSecp256r1Template } from './secp256r1/index.ts';
 
 const program = new Command();
 
@@ -21,8 +22,11 @@ program
         return;
     }
     
+    const msgHash = option.msgHash.replace(/^0x/, '');
     if (["k1", "secp256k1"].indexOf(option.curve) !== -1) {
-      await createSecp256k1Template(option.privateKey, option.msgHash);
+      await createSecp256k1Template(option.privateKey, msgHash);
+    } else if (['r1', 'p256', 'secp256r1'].indexOf(option.curve) !== -1) {
+      await createSecp256r1Template(option.privateKey, msgHash);
     } else {
       console.error('Unsupported curve. Use secp256k1 or secp256r1.');
     }
