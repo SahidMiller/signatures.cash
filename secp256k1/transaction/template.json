@@ -1,7 +1,7 @@
 {
   "$schema": "https://libauth.org/schemas/wallet-template-v0.schema.json",
-  "description": "",
-  "name": "Untitled",
+  "description": "Generated template using https://github.com/SahidMiller/signatures.cash",
+  "name": "Secp256k1 Verification",
   "entities": {
     "signature_data": {
       "description": "",
