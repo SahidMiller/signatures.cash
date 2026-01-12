@@ -1,3 +1,4 @@
+// OP_DROP
 < // Convert int to compact size
     OP_DUP <253> OP_LESSTHAN
     OP_IF
@@ -94,7 +95,7 @@ OP_TXVERSION <0x05> OP_INVOKE // uint32(nVersion)
     OP_ELSE
         <0> <0> 
         OP_BEGIN 
-            OP_DUP OP_OUTPOINTTXHASH OP_REVERSEBYTES <1> OP_SPLIT OP_NIP OP_REVERSEBYTES //outpoint.txid
+            OP_DUP OP_OUTPOINTTXHASH //outpoint.txid
             OP_OVER OP_OUTPOINTINDEX <0x05> OP_INVOKE //u32(outpoint.index)
             OP_CAT //outpoint.txid || u32(outpoint.index)
             OP_ROT OP_SWAP //i, acc, outpoint.txid || u32(outpoint.index)
@@ -147,7 +148,7 @@ OP_TXVERSION <0x05> OP_INVOKE // uint32(nVersion)
     OP_CAT // append hashSequence
 
 //current outpoint
-    OP_INPUTINDEX OP_OUTPOINTTXHASH OP_REVERSEBYTES <1> OP_SPLIT OP_NIP OP_REVERSEBYTES //input.txid
+    OP_INPUTINDEX OP_OUTPOINTTXHASH //input.txid
     OP_INPUTINDEX OP_OUTPOINTINDEX <0x05> OP_INVOKE //uint4(input.vout)
     OP_CAT
     <0> OP_INPUTINDEX <0x06> OP_INVOKE //token prefix
@@ -181,40 +182,9 @@ OP_CAT // append serialize(current outpoint)
         OP_ELSE
             OP_3 OP_PICK <0x0300> OP_EQUAL
             OP_IF
-                OP_INPUTINDEX OP_TXOUTPUTCOUNT OP_LESSTHAN
+                OP_INPUTINDEX OP_DUP OP_TXOUTPUTCOUNT OP_LESSTHAN
                 OP_IF
-                    OP_INPUTINDEX OP_OUTPUTVALUE <8> OP_NUM2BIN  //uint64(value)
-                    
-                    /* lockingBytecodeField */
-                        <>
-                        OP_INPUTINDEX OP_OUTPUTTOKENCATEGORY
-                        OP_IF
-                            <0xef> OP_CAT //Token prefix
-                            
-                            OP_INPUTINDEX OP_OUTPUTTOKENCATEGORY <32> OP_SPLIT OP_DROP  //prefix+category
-                            OP_CAT
-                            /* tokenBitfield */
-                                OP_INPUTINDEX OP_OUTPUTTOKENAMOUNT OP_0 OP_EQUAL OP_IF <0x20> OP_ELSE <0x00> OP_ENDIF //HAS_NFT
-                                OP_INPUTINDEX OP_OUTPUTTOKENCOMMITMENT OP_IF <0x40> OP_ELSE <0x00> OP_ENDIF //HAS_COMMITMENT_LENGTH
-                                OP_OR
-                                OP_INPUTINDEX OP_OUTPUTTOKENAMOUNT OP_0 OP_GREATERTHAN OP_IF <0x10> OP_ELSE <0x00> OP_ENDIF //HAS_AMOUNT
-                                OP_OR
-                                OP_INPUTINDEX OP_OUTPUTTOKENCATEGORY <32> OP_SPLIT OP_NIP <1> OP_NUM2BIN //capabilityInt
-                                OP_OR
-                            /* end tokenBitfield */    
-                            OP_CAT
-                            OP_INPUTINDEX OP_OUTPUTTOKENCOMMITMENT OP_DUP OP_IF OP_SIZE <0x04> OP_INVOKE OP_SWAP OP_CAT OP_ELSE OP_DROP <> OP_ENDIF //varint(commitment.length) || commitment
-                            OP_CAT
-                            OP_INPUTINDEX OP_OUTPUTTOKENAMOUNT OP_DUP OP_IF <0x04> OP_INVOKE OP_ELSE OP_DROP <> OP_ENDIF //compact_uint(token amount)
-                            OP_CAT
-                        OP_ELSE
-                        OP_ENDIF
-                        OP_INPUTINDEX OP_OUTPUTBYTECODE //bytecode
-                        OP_CAT 
-                    /* end lockingBytecodeField */
-
-                    OP_SIZE <0x04> OP_INVOKE OP_SWAP OP_CAT //compact_uint(lockingBytecodeField.length) || lockingBytecodeField
-                    OP_CAT //uint64(value) || compact_uint(lockingBytecodeField.length) || lockingBytecodeField        
+                    <0> OP_SWAP <0x07> OP_INVOKE OP_ROT OP_DROP OP_NIP
                     OP_HASH256
                 OP_ELSE
                     <0> <32> OP_NUM2BIN
@@ -232,5 +202,4 @@ OP_CAT
 OP_NIP OP_NIP OP_NIP
 OP_SWAP <0x05> OP_INVOKE //uint4(sighash)
 OP_CAT
-
 OP_HASH256
